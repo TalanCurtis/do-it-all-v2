@@ -8,7 +8,7 @@ const app = express()
 
 // connection string to database
 const CONNECTION_STRING = process.env.CONNECTION_STRING
-massive({connectionString: CONNECTION_STRING}).then(db => app.set('db', db))
+massive({ connectionString: CONNECTION_STRING }).then(db => app.set('db', db))
 
 // massive({})
 
@@ -23,13 +23,15 @@ app.use(bodyParser.json())
 // endpoints
 // test controller endpoints
 app.get('/api/test', test_controller.testGet)
-app.get('/api/testDB', test_controller.testGetDB)
+// find out how to move db hits to controllers. says app is not defined
+//app.get('/api/testDB', test_controller.testGetDB)
+app.get('/api/testDB', ((req, res, next) => {
+    app.get('db').testGetAll().then((responseFromDB) => {
+        res.status(200).send(responseFromDB)
+    })
+}
+))
 
-// app.get('/api/testDB', (req, res) => {
-//     app.get('db').testGetAll().then((responseFromDB) => {
-//       res.status(200).json(responseFromDB)
-//     })
-//   });
-
+// set server to listen 
 const port = process.env.SERVER_PORT || 3002
-app.listen(port, ()=>{console.log(`listening on port ${port}`)})
+app.listen(port, () => { console.log(`listening on port ${port}`) })
